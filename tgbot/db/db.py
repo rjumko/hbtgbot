@@ -283,7 +283,4 @@ ic(get_users_ids())
 # for i in users:
 #     print(i)
 # print(len(users))
-# # print(get_datey())
 
-
-# connection.close()
