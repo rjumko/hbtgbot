@@ -23,7 +23,6 @@ import tgbot.states
 
 
 async def send_message_to_admin():
-    # print("start")
     pass
 
 
