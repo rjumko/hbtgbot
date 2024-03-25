@@ -91,11 +91,11 @@ settings_dialog = Dialog(
     Window(
         Format("Настройки.\n{copy_status}", when="copy_status"),
         Format("Настройки.", when="first_show"),
-        Button(
-            text=Const("Копировать данные с google sheet"),
-            id="copy_data",
-            on_click=copy_data,
-        ),
+        # Button(
+        #     text=Const("Копировать данные с google sheet"),
+        #     id="copy_data",
+        #     on_click=copy_data,
+        # ),
         Button(
             text=Const("Изменить ссылку на google sheet"),
             id="change_url",
