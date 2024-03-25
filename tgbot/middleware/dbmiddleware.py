@@ -1,10 +1,7 @@
+import asyncpg
 from typing import Dict, Any, Callable, Awaitable
 from aiogram import BaseMiddleware
-import asyncpg
-
-# from aiogram.dispatcher.middlewares import LifetimeControllerMiddleware
 from aiogram.types.base import TelegramObject
-from apscheduler_di import ContextSchedulerDecorator
 from tgbot.db.dbconnect import Request
 
 

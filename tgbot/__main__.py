@@ -44,6 +44,7 @@ async def main():
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+        datefmt="%d/%m/%Y %I:%M:%S %p %Z",
     )
     logger.debug("-----------------Starting bot-------------------------")
     env = Env()
@@ -87,8 +88,8 @@ async def main():
     setup_dialogs(dp)
     scheduler.start()
     lst = get_users_ids()
-    for l in lst:
-        ic(l[0])
+    # for l in lst:
+        # ic(l[0])
         # sched_add_cron(scheduler, l[0])
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
