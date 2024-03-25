@@ -27,7 +27,9 @@ async def send_message_to_admin():
 
 
 # Этот хэндлер будет срабатывать на команду /start
-async def command_start_process(message: Message, dialog_manager: DialogManager, request: Request):
+async def command_start_process(
+    message: Message, dialog_manager: DialogManager, request: Request
+):
     await request.add_data(message.from_user.id, message.from_user.first_name)
     ic("ADD NEW USER")
     ic(message.from_user.id)
@@ -61,12 +63,14 @@ async def main():
         host=env("DB__HOST"),
         port=env("DB__PORT"),
         command_timeout=60,
-        )
+    )
 
     bot = Bot(token=BOT_TOKEN)
-    
+
     redis = Redis(host=env("REDIS__HOST"))
-    storage = RedisStorage(redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True))
+    storage = RedisStorage(
+        redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True)
+    )
     dp = Dispatcher(storage=storage)
     jobstores = {
         "default": RedisJobStore(

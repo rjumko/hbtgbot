@@ -62,6 +62,7 @@ def update_url_google(url_google: str, user_id: str) -> None:
     )
     connection.commit()
 
+
 def get_users_ids():
     cursor = connection.cursor()
     cursor.execute(
@@ -70,6 +71,7 @@ def get_users_ids():
         """,
     )
     return cursor.fetchall()
+
 
 def get_url_google(user_id: str):
     cursor = connection.cursor()
@@ -178,6 +180,7 @@ def get_users_birthday_today(user_id: str):
     )
     return cursor.fetchall()
 
+
 def get_users_birthday_today2(user_id: str):
     cursor = connection.cursor()
     cursor.execute(
@@ -190,6 +193,7 @@ def get_users_birthday_today2(user_id: str):
         (user_id,),
     )
     return cursor.fetchall()
+
 
 def get_users(user_id: str):
     cursor = connection.cursor()
@@ -258,29 +262,3 @@ def set_start_status(user_id: str, status: int):
         (status, user_id),
     )
     connection.commit()
-
-
-# print(set_start_status("48339289", 1))
-# start_status = get_start_status(2018452772)
-# print(start_status)
-# ic(is_user_empty("4834392289"))
-# ic(get_users("483392289"))
-# ic(get_users_birthday_today2("483392289"), "-----------------------------")
-ic(get_users_ids())
-# ic(is_user_in_url_google("4833922894"))
-# add_column()
-# print(get_users_birthday_today("483392289"))
-# del_url_google("483392289")
-# create_table_url_google()
-# update_url_google(url_google="fdhdgh444dfhdfh", user_id="483392289")
-# delete_all()
-# print(get_url_google("483392289"))
-# # print(split_str(IN_STR))
-# # add_user(split_str(IN_STR))
-# # add_1000_users()
-# # delete_user("Фигулин Петр Васильевич")
-# users = get_users_birthday_today()
-# for i in users:
-#     print(i)
-# print(len(users))
-

@@ -57,7 +57,9 @@ async def hb_today_getter(
 async def button_settings(
     callback: CallbackQuery, button: Button, dialog_manager: DialogManager
 ):
-    await dialog_manager.start(state=tgbot.states.SettingSG.start, data={"first_show": True})
+    await dialog_manager.start(
+        state=tgbot.states.SettingSG.start, data={"first_show": True}
+    )
 
 
 async def hb_today(
@@ -69,29 +71,32 @@ async def hb_today(
     dialog_manager.dialog_data.update(hb_today_text=txt)
     await dialog_manager.switch_to(state=tgbot.states.StartSG.hb_today)
 
+
 def sched_add_cron(apscheduler, user_id):
     apscheduler.add_job(
-            tgbot.apsched.send_message_cron,
-            trigger="cron",
-            hour=12,
-            minute=0,
-            # second=30,
-            start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
-            id=user_id,
-            kwargs={"user_id": user_id},
-        )
-    
+        tgbot.apsched.send_message_cron,
+        trigger="cron",
+        hour=12,
+        minute=0,
+        # second=30,
+        start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
+        id=user_id,
+        kwargs={"user_id": user_id},
+    )
+
+
 def sched_add_interval(apscheduler, user_id):
     apscheduler.add_job(
-            tgbot.apsched.send_message_cron,
-            trigger="interval",
-            # hour=12,
-            # minute=0,
-            seconds=10,
-            start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
-            id=user_id,
-            kwargs={"user_id": user_id},
-        )
+        tgbot.apsched.send_message_cron,
+        trigger="interval",
+        # hour=12,
+        # minute=0,
+        seconds=10,
+        start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
+        id=user_id,
+        kwargs={"user_id": user_id},
+    )
+
 
 async def checkbox_scheduler(
     callback: CallbackQuery,
@@ -120,7 +125,7 @@ async def checkbox_scheduler(
         else:
             ic("DEV - FALSE")
             sched_add_cron(apscheduler, user_id)
-        
+
         ic("-------ADD------------\n", apscheduler.get_job(user_id).next_run_time)
         ic(user_id)
         set_start_status(user_id, 1)
