@@ -94,7 +94,7 @@ async def main():
     lst = get_users_ids()
     for l in lst:
         ic(l[0])
-        sched_add_cron(scheduler, l[0])
+        # sched_add_cron(scheduler, l[0])
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
