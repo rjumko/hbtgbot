@@ -48,7 +48,7 @@ async def main():
         level=logging.DEBUG,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     )
-    logger.debug("Starting bot")
+    logger.debug("-----------------Starting bot-------------------------")
     env = Env()
     env.read_env()
 
@@ -76,7 +76,6 @@ async def main():
             db=2,
         )
     }
-    ic("start")
     scheduler = ContextSchedulerDecorator(
         AsyncIOScheduler(timezone="Asia/Novosibirsk", jobstores=jobstores)
     )
