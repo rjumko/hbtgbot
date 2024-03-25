@@ -9,14 +9,14 @@ services:
           # - tgvol:/data
         extra_hosts:
             - "host.docker.internal:host-gateway"
-    # copy_scheduler:
-    #     build: .
-    #     restart: "unless-stopped"
-    #     env_file: ".env"
-    #     volumes:
-    #       - "/home/rjumko/tgbots/happy_birthday/db/my_database.sqlite:/data/my_database.sqlite"
-    #       # - tgvol:/data
-    #     extra_hosts:
-    #         - "host.docker.internal:host-gateway"
+    copy_scheduler:
+        build: copy_scheduler
+        restart: "unless-stopped"
+        # env_file: ".env"
+        volumes:
+          - "/home/rjumko/tgbots/happy_birthday/db/my_database.sqlite:/data/my_database.sqlite"
+          # - tgvol:/data
+        # extra_hosts:
+            # - "host.docker.internal:host-gateway"
 volumes:
   tgvol:

@@ -1,5 +1,4 @@
 from datetime import datetime
-from icecream import ic
 import pandas as pd
 import logging
 from copy_scheduler.db import get_url_google, delete_all_by_userid, add_users
