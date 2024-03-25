@@ -22,11 +22,6 @@ import asyncpg
 import tgbot.states
 
 
-async def send_message_to_admin():
-    pass
-
-
-# Этот хэндлер будет срабатывать на команду /start
 async def command_start_process(
     message: Message, dialog_manager: DialogManager, request: Request
 ):
