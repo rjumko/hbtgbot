@@ -8,7 +8,7 @@ logging.basicConfig(
            )
 logging.getLogger(__name__).setLevel(logging.DEBUG)
 
-DB_URI = "my_database.sqlite"
+DB_URI = "/data/my_database.sqlite"
 
 def add_users(users: list[tuple]):
     connection = sqlite3.connect(DB_URI)
