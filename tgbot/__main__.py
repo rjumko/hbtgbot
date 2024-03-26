@@ -38,6 +38,15 @@ async def command_start_process(
         state=tgbot.states.StartSG.start, mode=StartMode.RESET_STACK, data=data
     )
 
+async def db_pool(env: Env):
+    return  await asyncpg.create_pool(
+        user=env("DB__USER"),
+        password=env("DB__PASSWORD"),
+        database=env("DB__NAME"),
+        host=env("DB__HOST"),
+        port=env("DB__PORT"),
+        command_timeout=60,
+    )
 
 async def main():
     logger = logging.getLogger(__name__)
@@ -52,14 +61,7 @@ async def main():
 
     BOT_TOKEN = env("BOT_TOKEN")
 
-    pool_connect = await asyncpg.create_pool(
-        user=env("DB__USER"),
-        password=env("DB__PASSWORD"),
-        database=env("DB__NAME"),
-        host=env("DB__HOST"),
-        port=env("DB__PORT"),
-        command_timeout=60,
-    )
+    pool_connect = await db_pool(env)
 
     bot = Bot(token=BOT_TOKEN)
 
