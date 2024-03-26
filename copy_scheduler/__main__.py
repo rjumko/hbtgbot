@@ -22,6 +22,7 @@ if __name__ == "__main__":
         level=logging.DEBUG,
         format='[%(asctime)s] #%(levelname)-8s %(filename)s:'
            '%(lineno)d - %(name)s - %(message)s',
+        datefmt="%d/%m/%Y %H:%M:%S %p %Z",
            )
     logging.getLogger(__name__).setLevel(logging.DEBUG)
     scheduler = BackgroundScheduler()

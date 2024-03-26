@@ -25,7 +25,8 @@ import tgbot.states
 async def command_start_process(
     message: Message, dialog_manager: DialogManager, request: Request
 ):
-    await request.add_data(message.from_user.id, message.from_user.first_name)
+    # await request.add_data(message.from_user.id, message.from_user.first_name)
+    
     ic("ADD NEW USER")
     ic(message.from_user.id)
     if not is_user_in_url_google(message.from_user.id):
@@ -38,8 +39,12 @@ async def command_start_process(
         state=tgbot.states.StartSG.start, mode=StartMode.RESET_STACK, data=data
     )
 
+
 async def db_pool(env: Env):
-    return  await asyncpg.create_pool(
+    print(env("DB__HOST"))
+    print(env("DB__USER"))
+    print(env("DB__PASSWORD"))
+    return await asyncpg.create_pool(
         user=env("DB__USER"),
         password=env("DB__PASSWORD"),
         database=env("DB__NAME"),
@@ -48,20 +53,23 @@ async def db_pool(env: Env):
         command_timeout=60,
     )
 
+
 async def main():
     logger = logging.getLogger(__name__)
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-        datefmt="%d/%m/%Y %I:%M:%S %p %Z",
+        datefmt="%d/%m/%Y %H:%M:%S %p %Z",
     )
     logger.debug("-----------------Starting bot-------------------------")
     env = Env()
     env.read_env()
-
     BOT_TOKEN = env("BOT_TOKEN")
 
     pool_connect = await db_pool(env)
+    request = Request(pool_connect)
+    await request.create_users_table()
+    await request.create_clients_table()
 
     bot = Bot(token=BOT_TOKEN)
 
@@ -91,8 +99,8 @@ async def main():
     scheduler.start()
     lst = get_users_ids()
     # for l in lst:
-        # ic(l[0])
-        # sched_add_cron(scheduler, l[0])
+    # ic(l[0])
+    # sched_add_cron(scheduler, l[0])
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

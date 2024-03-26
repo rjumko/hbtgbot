@@ -2,6 +2,8 @@ import sqlite3
 from dataclasses import dataclass
 from datetime import date
 from icecream import ic
+from environs import Env
+
 
 
 @dataclass
@@ -11,8 +13,15 @@ class Client:
     address: str
     birthday: date
 
+env = Env()
+env.read_env()
+if env.bool("DEV"):
+    ic("DEV - TRUE")
+    connection = sqlite3.connect("my_database.sqlite")
+else:
+    ic("DEV - FALSE")
+    connection = sqlite3.connect("/data/my_database.sqlite")
 
-connection = sqlite3.connect("/data/my_database.sqlite")
 
 
 def create_table():
