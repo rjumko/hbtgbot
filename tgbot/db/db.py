@@ -5,14 +5,6 @@ from icecream import ic
 from environs import Env
 
 
-
-@dataclass
-class Client:
-    full_name: str
-    phone: str
-    address: str
-    birthday: date
-
 env = Env()
 env.read_env()
 if env.bool("DEV"):
@@ -21,7 +13,6 @@ if env.bool("DEV"):
 else:
     ic("DEV - FALSE")
     connection = sqlite3.connect("/data/my_database.sqlite")
-
 
 
 def create_table():

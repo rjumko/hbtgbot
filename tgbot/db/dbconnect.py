@@ -22,7 +22,7 @@ class Request:
         await self.connector.execute(
             """
             CREATE TABLE IF NOT EXISTS clients (
-                client_id BIGINT PRIMARY KEY,
+                client_id SERIAL PRIMARY KEY,
                 phone VARCHAR(50),
                 address VARCHAR(500),
                 birthday date,
@@ -47,3 +47,32 @@ class Request:
             """
         )
         self.logger.info(f"User add in BD")
+
+    async def is_user_in_url_google(self, user_id: int):
+        row = await self.connector.fetchval(
+            """
+            SELECT * FROM users
+            WHERE user_id=$1;
+            """,
+            user_id,
+        )
+        return True if row else False
+    
+    async def add_user(self, user_id: int):
+        await self.connector.execute(
+            """
+            INSERT INTO users (user_id, google_url, start_schedul) VALUES ($1, Null, false)
+            ON CONFLICT DO NOTHING
+            """,
+            user_id,
+        )
+
+    async def get_url_google(self, user_id: int):
+        row = await self.connector.fetchrow(
+            """
+            SELECT google_url FROM users
+            WHERE user_id=$1;
+            """,
+            user_id,
+        )
+        return row.get('google_url', None) if row else None

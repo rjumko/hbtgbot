@@ -41,9 +41,6 @@ async def command_start_process(
 
 
 async def db_pool(env: Env):
-    print(env("DB__HOST"))
-    print(env("DB__USER"))
-    print(env("DB__PASSWORD"))
     return await asyncpg.create_pool(
         user=env("DB__USER"),
         password=env("DB__PASSWORD"),
@@ -64,6 +61,7 @@ async def main():
     logger.debug("-----------------Starting bot-------------------------")
     env = Env()
     env.read_env()
+    
     BOT_TOKEN = env("BOT_TOKEN")
 
     pool_connect = await db_pool(env)
