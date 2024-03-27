@@ -57,7 +57,7 @@ class Request:
             user_id,
         )
         return True if row else False
-    
+
     async def add_user(self, user_id: int):
         await self.connector.execute(
             """
@@ -75,4 +75,89 @@ class Request:
             """,
             user_id,
         )
-        return row.get('google_url', None) if row else None
+        return row.get("google_url", None) if row else None
+
+    async def update_google_url(self, google_url: str, user_id: int) -> None:
+        await self.connector.execute(
+            """
+            INSERT INTO users (user_id, google_url, start_schedul) VALUES($1, $2, false)
+            ON CONFLICT(user_id) DO UPDATE SET google_url=$2;
+            """,
+            user_id,
+            google_url,
+        )
+
+    async def get_start_status(self, user_id: int):
+        row = await self.connector.fetchrow(
+            """
+            SELECT start_schedul FROM users
+            WHERE user_id = $1
+            """,
+            user_id,
+        )
+        return row.get("start_schedul") if row else None
+
+    async def set_start_status(self, user_id: int, start_schedul: bool):
+        await self.connector.execute(
+            """
+            UPDATE users SET start_schedul = $1
+            WHERE user_id = $2
+            """,
+            start_schedul, 
+            user_id,
+        )
+
+    async def is_clients_empty(self, user_id: int):
+        row = await self.connector.fetchrow(
+            """
+            SELECT * FROM clients
+            WHERE user_id = $1
+            """,
+            user_id,
+        )
+        return False if row else True
+    
+    async def get_clients_birthday_today(self, user_id: int):
+        rows = await self.connector.fetch(
+            """
+            SELECT phone, client_name, birthday FROM clients
+            WHERE date_part('month', birthday) = date_part('month', CURRENT_DATE)
+            AND date_part('day', birthday) = date_part('day', CURRENT_DATE)
+            AND user_id = $1
+            ORDER BY client_name
+            """,
+            user_id,
+        )
+        return rows
+    
+    async def delete_all_by_userid(self, user_id: int) -> None:
+        await self.connector.execute(
+            """
+            DELETE FROM clients
+            WHERE user_id = $1
+            """,
+            user_id,
+        )
+
+
+    async def add_clients(self, clients: list[tuple]):
+        await self.connector.executemany(
+            "INSERT INTO clients (phone, address, birthday, client_name, user_id) VALUES ($1, $2, $3, $4, $5)",
+            clients,
+        )
+
+    async def add_users(self, users: list[tuple]):
+        await self.connector.executemany(
+            """
+            INSERT INTO users (user_id, google_url, start_schedul) VALUES($1, $2, $3)
+            ON CONFLICT(user_id) DO NOTHING;
+            """,
+            users
+        )
+
+    async def delete_all_users(self):
+        await self.connector.execute(
+            """
+            DELETE FROM users
+            """,
+        )

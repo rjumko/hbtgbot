@@ -31,19 +31,6 @@ async def settings_getter(
     return getter_data
 
 
-async def copy_data(
-    callback: CallbackQuery, button: Button, dialog_manager: DialogManager
-):
-    usr_id = callback.from_user.id
-    res = copy_data_from_table(usr_id)
-    if res:
-        dialog_manager.dialog_data.update(copy_status="Копирование выполнено.")
-    else:
-        dialog_manager.dialog_data.update(
-            copy_status="Необходимо ввести адрес гугл таблицы."
-        )
-
-
 async def change_url(
     callback: CallbackQuery, button: Button, dialog_manager: DialogManager
 ):
@@ -53,12 +40,6 @@ async def change_url(
     )
 
 
-async def message_handler(
-    message: Message, widget: MessageInput, dialog_manager: DialogManager
-) -> None:
-    update_url_google(url_google=message.text, user_id=message.from_user.id)
-
-
 async def cancel(
     message: Message, widget: MessageInput, dialog_manager: DialogManager
 ) -> None:
@@ -66,7 +47,9 @@ async def cancel(
 
 
 def url_check(url: str) -> str:
-    if len(url.split("/")) > 6 and url.startswith("https://docs.google.com/spreadsheets/d/"):
+    if len(url.split("/")) > 6 and url.startswith(
+        "https://docs.google.com/spreadsheets/d/"
+    ):
         return url
     raise ValueError
 
@@ -91,11 +74,6 @@ settings_dialog = Dialog(
     Window(
         Format("Настройки.\n{copy_status}", when="copy_status"),
         Format("Настройки.", when="first_show"),
-        # Button(
-        #     text=Const("Копировать данные с google sheet"),
-        #     id="copy_data",
-        #     on_click=copy_data,
-        # ),
         Button(
             text=Const("Изменить ссылку на google sheet"),
             id="change_url",
@@ -107,17 +85,12 @@ settings_dialog = Dialog(
     ),
     Window(
         Const(text="Скопируй сюда адрес гугл таблицы:"),
-        # MessageInput(
-        #     func=message_handler,
-        #     content_types=ContentType.ANY,
-        # ),
         TextInput(
             id="age_input",
             type_factory=url_check,
             on_success=correct_age_handler,
             on_error=error_age_handler,
         ),
-        # TextInput()
         Button(text=Const("Отмена"), id="start_timer", on_click=cancel),
         state=tgbot.states.SettingSG.url_copy,
     ),

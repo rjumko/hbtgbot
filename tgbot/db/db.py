@@ -148,15 +148,6 @@ def delete_all_by_userid(user_id: str) -> None:
     print("DELETE OK")
 
 
-def add_user(user: Client):
-    cursor = connection.cursor()
-    cursor.execute(
-        "INSERT INTO Users (username, phone, address, birthday) VALUES (?, ?, ?, ?)",
-        (user.full_name, user.phone, user.address, user.birthday),
-    )
-    connection.commit()
-
-
 def add_users(users: list[tuple]):
     cursor = connection.cursor()
     cursor.executemany(
@@ -262,3 +253,12 @@ def set_start_status(user_id: str, status: int):
         (status, user_id),
     )
     connection.commit()
+
+def get_all_users():
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        SELECT * FROM url_google
+        """,
+    )
+    return cursor.fetchall()

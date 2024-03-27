@@ -21,10 +21,23 @@ def get_table_from_google(url: str, user_id: str) -> list[tuple]:
         for l in lst
     ]
 
+def get_table_from_google2(url: str, user_id: int) -> list[tuple]:
+    sheet_id = get_sheet_id(url)
+    df = pd.read_csv(
+        f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv",
+        header=0,
+    )
+    df = df.fillna("").values.tolist()
+    lst = list(tuple(sub) for sub in df)
+    for sub in df:
+        print(str(sub[0]))
+    # print(lst)
+    return [
+        (str(l[0]), l[1], datetime.strptime(l[2].strip(), "%d.%m.%Y"), l[3], user_id)
+        for l in lst
+    ]
 
 def prep_hb_text(lst: list):
-    """text='&lt;code&gt;Это моноширинный текст&lt;/code&gt;:\n'
-    '<code>Это моноширинный текст</code>'"""
     if lst:
         ic("День рождения у")
         text = "День рождения у:\n"
