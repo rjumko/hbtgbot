@@ -100,6 +100,7 @@ async def main():
             if env("DEV"):
                 sched_add_interval(scheduler, l[0], request)
             else:
+                print("---------------------------44444444444444444444----------------")
                 sched_add_cron(scheduler, l[0], request)
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
