@@ -17,7 +17,6 @@ from tgbot.middleware.scheduler import SchedulerMiddleware
 from tgbot.middleware.dbmiddleware import DbSession
 from tgbot.db.dbconnect import Request
 from tgbot.add_jobs import sched_add_cron, sched_add_interval
-from tgbot.db.db import get_users_ids
 import asyncpg
 import tgbot.states
 

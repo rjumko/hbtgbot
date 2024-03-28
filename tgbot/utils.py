@@ -1,7 +1,6 @@
 from datetime import datetime
 from icecream import ic
 import pandas as pd
-from tgbot.db.db import get_url_google, delete_all_by_userid, add_users
 from tgbot.db.dbconnect import Request
 
 

@@ -1,7 +1,6 @@
 from icecream import ic
 from aiogram import Bot
 import logging
-from tgbot.db.db import get_users_birthday_today
 from tgbot.utils import prep_hb_text
 from tgbot.db.dbconnect import Request
 

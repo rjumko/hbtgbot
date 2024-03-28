@@ -1,5 +1,4 @@
 from datetime import datetime
-from urllib import request
 from icecream import ic
 from aiogram.types import User, CallbackQuery
 from aiogram_dialog import Dialog, DialogManager, Window
@@ -11,13 +10,7 @@ import tgbot.states
 import tgbot.apsched
 from tgbot.utils import prep_hb_text
 from tgbot.db.dbconnect import Request
-from tgbot.db.db import (
-    get_url_google,
-    get_start_status,
-    set_start_status,
-    is_user_empty,
-    get_users_birthday_today,
-)
+
 
 
 async def start_getter(

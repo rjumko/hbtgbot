@@ -4,7 +4,6 @@ from aiogram_dialog.widgets.text import Const, Format
 from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.input import MessageInput, TextInput, ManagedTextInput
 from tgbot.utils import copy_data_from_table
-from tgbot.db.db import update_url_google
 from tgbot.db.dbconnect import Request
 import tgbot.states
 
