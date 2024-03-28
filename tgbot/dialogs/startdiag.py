@@ -12,7 +12,6 @@ from tgbot.utils import prep_hb_text
 from tgbot.db.dbconnect import Request
 
 
-
 async def start_getter(
     dialog_manager: DialogManager, event_from_user: User, **kwargs
 ):  # -> dict[str, Any]:
@@ -70,17 +69,18 @@ async def hb_today(
     await dialog_manager.switch_to(state=tgbot.states.StartSG.hb_today)
 
 
-def sched_add_cron(apscheduler, user_id):
+def sched_add_cron(apscheduler, user_id, request):
     apscheduler.add_job(
-        tgbot.apsched.send_message_cron,
+        tgbot.apsched.send_message_cron2,
         trigger="cron",
         hour=12,
         minute=0,
         # second=30,
         start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
         id=str(user_id),
-        kwargs={"user_id": user_id},
+        kwargs={"user_id": user_id, "request": request},
     )
+
 
 async def db_pool(env: Env):
     return await asyncpg.create_pool(
@@ -105,7 +105,7 @@ async def sched_add_interval(apscheduler, user_id: int, request: Request):
         seconds=10,
         start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
         id=str(user_id),
-        kwargs={"user_id": user_id, 'request': env},
+        kwargs={"user_id": user_id, "request": env},
     )
 
 

@@ -20,21 +20,20 @@ import asyncpg
 import tgbot.states
 
 
+logger = logging.getLogger(__name__)
+
+
 async def command_start_process(
     message: Message, dialog_manager: DialogManager, request: Request
 ):
-    # await request.add_data(message.from_user.id, message.from_user.first_name)
-    
     ic("ADD NEW USER")
     ic(message.from_user.id)
-    # postgres start
     if not await request.is_user_in_url_google(message.from_user.id):
         await request.add_user(message.from_user.id)
     if await request.get_google_url(message.from_user.id):
         data = {"first_show": False}
     else:
         data = {"first_show": True}
-    # postrges end
     await dialog_manager.start(
         state=tgbot.states.StartSG.start, mode=StartMode.RESET_STACK, data=data
     )
@@ -52,7 +51,6 @@ async def db_pool(env: Env):
 
 
 async def main():
-    logger = logging.getLogger(__name__)
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -61,7 +59,7 @@ async def main():
     logger.debug("-----------------Starting bot-------------------------")
     env = Env()
     env.read_env()
-    
+
     BOT_TOKEN = env("BOT_TOKEN")
 
     pool_connect = await db_pool(env)
@@ -84,9 +82,7 @@ async def main():
             db=2,
         )
     }
-    scheduler = ContextSchedulerDecorator(
-        AsyncIOScheduler(timezone="Asia/Novosibirsk")
-    )
+    scheduler = ContextSchedulerDecorator(AsyncIOScheduler(timezone="Asia/Novosibirsk"))
     scheduler.ctx.add_instance(bot, declared_class=Bot)
     dp.update.middleware.register(SchedulerMiddleware(scheduler))
     dp.update.middleware.register(DbSession(pool_connect))
@@ -100,10 +96,16 @@ async def main():
     for l in lst:
         logger.debug(f"{l[0]}, {l[1]}")
         if l[1]:
-            sched_add_cron(scheduler, l[0], request)
+            if env("DEV"):
+                sched_add_interval(scheduler, l[0], request)
+            else:
+                sched_add_cron(scheduler, l[0], request)
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        logger.error("Bot stopped!")

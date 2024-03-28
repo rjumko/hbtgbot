@@ -11,7 +11,7 @@ def sched_add_cron(apscheduler, user_id, request):
         # second=30,
         start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
         id=str(user_id),
-        kwargs={"user_id": user_id, "request": request},
+        kwargs={"user_id": user_id, "request": request, "apscheduler": apscheduler},
     )
 
 def sched_add_interval(apscheduler, user_id, request):
@@ -23,5 +23,5 @@ def sched_add_interval(apscheduler, user_id, request):
         seconds=10,
         start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
         id=str(user_id),
-        kwargs={"user_id": user_id, "request": request},
+        kwargs={"user_id": user_id, "request": request, "apscheduler": apscheduler},
     )
