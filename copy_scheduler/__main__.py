@@ -6,8 +6,8 @@ from environs import Env
 from time import sleep
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from copy_scheduler.utils import copy_data_from_table
 from copy_scheduler.dbconnect import Request
+from copy_scheduler.utils import copy_data_from_table
 
 
 async def copy_data_from_google_table(db: Request):
