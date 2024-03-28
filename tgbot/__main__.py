@@ -10,7 +10,6 @@ from aiogram_dialog import DialogManager, StartMode, setup_dialogs
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler_di import ContextSchedulerDecorator
-from tgbot.db.db import get_url_google, is_user_in_url_google, add_user_in_url_google
 from tgbot.dialogs.settingsdiag import settings_dialog
 from tgbot.dialogs.startdiag import start_dialog
 from tgbot.middleware.scheduler import SchedulerMiddleware
