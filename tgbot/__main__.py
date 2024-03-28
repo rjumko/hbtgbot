@@ -35,12 +35,6 @@ async def command_start_process(
     else:
         data = {"first_show": True}
     # postrges end
-    if not is_user_in_url_google(message.from_user.id):
-        add_user_in_url_google(message.from_user.id)
-    if get_url_google(message.from_user.id):
-        data = {"first_show": False}
-    else:
-        data = {"first_show": True}
     await dialog_manager.start(
         state=tgbot.states.StartSG.start, mode=StartMode.RESET_STACK, data=data
     )
