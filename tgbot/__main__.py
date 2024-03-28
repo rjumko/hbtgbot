@@ -16,7 +16,7 @@ from tgbot.dialogs.startdiag import start_dialog
 from tgbot.middleware.scheduler import SchedulerMiddleware
 from tgbot.middleware.dbmiddleware import DbSession
 from tgbot.db.dbconnect import Request
-from tgbot.add_jobs import sched_add_cron
+from tgbot.add_jobs import sched_add_cron, sched_add_interval
 from tgbot.db.db import get_users_ids
 import asyncpg
 import tgbot.states
@@ -108,7 +108,7 @@ async def main():
     for l in lst:
         logger.debug(f"{l[0]}, {l[1]}")
         if l[1]:
-            sched_add_cron(scheduler, l[0])
+            sched_add_cron(scheduler, l[0], request)
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
