@@ -96,6 +96,7 @@ async def main():
     for l in lst:
         logger.debug(f"{l[0]}, {l[1]}")
         if l[1]:
+            print("----------------------------------------", env("DEV"))
             if env("DEV"):
                 sched_add_interval(scheduler, l[0], request)
             else:
