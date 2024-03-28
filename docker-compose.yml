@@ -12,7 +12,7 @@ services:
     copy_scheduler:
         build: copy_scheduler
         restart: "unless-stopped"
-        # env_file: ".env"
+        env_file: ".env"
         volumes:
           - "/home/rjumko/tgbots/happy_birthday/db/my_database.sqlite:/data/my_database.sqlite"
           # - tgvol:/data

@@ -67,7 +67,7 @@ class Request:
             user_id,
         )
 
-    async def get_url_google(self, user_id: int):
+    async def get_google_url(self, user_id: int):
         row = await self.connector.fetchrow(
             """
             SELECT google_url FROM users
@@ -96,6 +96,14 @@ class Request:
             user_id,
         )
         return row.get("start_schedul") if row else None
+    
+    async def get_users_id_status(self):
+        row = await self.connector.fetch(
+            """
+            SELECT user_id, start_schedul FROM users
+            """,
+        )
+        return row if row else None
 
     async def set_start_status(self, user_id: int, start_schedul: bool):
         await self.connector.execute(
@@ -107,7 +115,7 @@ class Request:
             user_id,
         )
 
-    async def is_clients_empty(self, user_id: int):
+    async def is_clients_empty(self, user_id: int) -> bool:
         row = await self.connector.fetchrow(
             """
             SELECT * FROM clients

@@ -5,6 +5,7 @@ from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.input import MessageInput, TextInput, ManagedTextInput
 from tgbot.utils import copy_data_from_table
 from tgbot.db.db import update_url_google
+from tgbot.db.dbconnect import Request
 import tgbot.states
 
 
@@ -58,8 +59,9 @@ def url_check(url: str) -> str:
 async def correct_age_handler(
     message: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str
 ) -> None:
-    update_url_google(url_google=message.text, user_id=message.from_user.id)
-    copy_data_from_table(message.from_user.id)
+    request: Request = dialog_manager.middleware_data["request"]
+    await request.update_google_url(google_url=message.text, user_id=message.from_user.id)
+    await copy_data_from_table(request, message.from_user.id)
     await dialog_manager.switch_to(state=tgbot.states.SettingSG.start)
 
 

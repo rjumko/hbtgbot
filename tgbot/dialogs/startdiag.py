@@ -1,13 +1,16 @@
 from datetime import datetime
+from urllib import request
 from icecream import ic
 from aiogram.types import User, CallbackQuery
 from aiogram_dialog import Dialog, DialogManager, Window
 from aiogram_dialog.widgets.text import Const, Format
 from aiogram_dialog.widgets.kbd import Button, Checkbox, ManagedCheckbox, Back
 from environs import Env
+import asyncpg
 import tgbot.states
 import tgbot.apsched
 from tgbot.utils import prep_hb_text
+from tgbot.db.dbconnect import Request
 from tgbot.db.db import (
     get_url_google,
     get_start_status,
@@ -20,11 +23,12 @@ from tgbot.db.db import (
 async def start_getter(
     dialog_manager: DialogManager, event_from_user: User, **kwargs
 ):  # -> dict[str, Any]:
-    user_id = str(event_from_user.id)
-    start_status = get_start_status(user_id)
+    request: Request = dialog_manager.middleware_data["request"]
+    user_id = event_from_user.id
+    start_status = await request.get_start_status(user_id)
     ic(user_id, start_status)
     await dialog_manager.find("checkbox").set_checked(checked=start_status)
-    if get_url_google(user_id):
+    if await request.get_google_url(user_id):
         ic()
         first_show = False
         show_start_scheduler = True
@@ -32,12 +36,12 @@ async def start_getter(
         ic()
         first_show = True
         show_start_scheduler = False
-    user_empty = is_user_empty(user_id)
+    user_empty = await request.is_clients_empty(user_id)
     scheduler_start = dialog_manager.find("checkbox").is_checked()
     return {
         "username": event_from_user.username,
         "first_show": first_show,
-        "start_status": get_start_status(user_id),
+        "start_status": await request.get_start_status(user_id),
         "show_start_scheduler": show_start_scheduler,
         "user_empty": user_empty,
         "scheduler_start": scheduler_start,
@@ -65,9 +69,10 @@ async def button_settings(
 async def hb_today(
     callback: CallbackQuery, button: Button, dialog_manager: DialogManager
 ):
-    user_id = str(callback.from_user.id)
+    request: Request = dialog_manager.middleware_data["request"]
+    user_id = callback.from_user.id
     ic(user_id, "----------------hb_today")
-    txt = prep_hb_text(get_users_birthday_today(user_id))
+    txt = prep_hb_text(await request.get_clients_birthday_today(user_id))
     dialog_manager.dialog_data.update(hb_today_text=txt)
     await dialog_manager.switch_to(state=tgbot.states.StartSG.hb_today)
 
@@ -80,21 +85,34 @@ def sched_add_cron(apscheduler, user_id):
         minute=0,
         # second=30,
         start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
-        id=user_id,
+        id=str(user_id),
         kwargs={"user_id": user_id},
     )
 
+async def db_pool(env: Env):
+    return await asyncpg.create_pool(
+        user="hbtgbot",
+        password="V3brtGUP0gDejGdnXNMt",
+        database="hbtgbot",
+        host="172.16.0.154",
+        port="5432",
+        command_timeout=60,
+    )
 
-def sched_add_interval(apscheduler, user_id):
+
+async def sched_add_interval(apscheduler, user_id: int, request: Request):
+    env = Request(await db_pool(666))
+    # env.read_env()
+    # pool_connect = await db_pool(env)
     apscheduler.add_job(
-        tgbot.apsched.send_message_cron,
+        tgbot.apsched.send_message_cron2,
         trigger="interval",
         # hour=12,
         # minute=0,
         seconds=10,
         start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
-        id=user_id,
-        kwargs={"user_id": user_id},
+        id=str(user_id),
+        kwargs={"user_id": user_id, 'request': env},
     )
 
 
@@ -105,30 +123,32 @@ async def checkbox_scheduler(
 ):
     env = Env()
     env.read_env()
-    user_id = str(callback.from_user.id)
+    user_id = callback.from_user.id
     apscheduler = dialog_manager.middleware_data["apscheduler"]
-    if apscheduler.get_job(user_id):
+    request: Request = dialog_manager.middleware_data["request"]
+    job_id = str(user_id)
+    if apscheduler.get_job(job_id):
         if checkbox.is_checked():
-            apscheduler.resume_job(user_id)
-            ic(user_id)
-            ic(apscheduler.get_job(user_id).next_run_time)
-            set_start_status(user_id, 1)
+            apscheduler.resume_job(job_id)
+            ic(job_id)
+            ic(apscheduler.get_job(job_id).next_run_time)
+            await request.set_start_status(user_id, True)
         else:
-            apscheduler.pause_job(user_id)
-            ic(user_id)
-            ic(apscheduler.get_job(user_id).next_run_time)
-            set_start_status(user_id, 0)
+            apscheduler.pause_job(job_id)
+            ic(job_id)
+            ic(apscheduler.get_job(job_id).next_run_time)
+            await request.set_start_status(user_id, False)
     else:
         if env.bool("DEV"):
             ic("DEV - TRUE")
-            sched_add_interval(apscheduler, user_id)
+            await sched_add_interval(apscheduler, user_id, request)
         else:
             ic("DEV - FALSE")
             sched_add_cron(apscheduler, user_id)
 
-        ic("-------ADD------------\n", apscheduler.get_job(user_id).next_run_time)
+        ic("-------ADD------------\n", apscheduler.get_job(job_id).next_run_time)
         ic(user_id)
-        set_start_status(user_id, 1)
+        await request.set_start_status(user_id, True)
     dialog_manager.dialog_data.update(is_checked=checkbox.is_checked())
 
 

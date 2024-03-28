@@ -29,6 +29,14 @@ async def command_start_process(
     
     ic("ADD NEW USER")
     ic(message.from_user.id)
+    # postgres start
+    if not await request.is_user_in_url_google(message.from_user.id):
+        await request.add_user(message.from_user.id)
+    if await request.get_google_url(message.from_user.id):
+        data = {"first_show": False}
+    else:
+        data = {"first_show": True}
+    # postrges end
     if not is_user_in_url_google(message.from_user.id):
         add_user_in_url_google(message.from_user.id)
     if get_url_google(message.from_user.id):
@@ -85,7 +93,7 @@ async def main():
         )
     }
     scheduler = ContextSchedulerDecorator(
-        AsyncIOScheduler(timezone="Asia/Novosibirsk", jobstores=jobstores)
+        AsyncIOScheduler(timezone="Asia/Novosibirsk")
     )
     scheduler.ctx.add_instance(bot, declared_class=Bot)
     dp.update.middleware.register(SchedulerMiddleware(scheduler))
@@ -95,10 +103,12 @@ async def main():
     dp.message.register(command_start_process, CommandStart())
     setup_dialogs(dp)
     scheduler.start()
-    lst = get_users_ids()
-    # for l in lst:
-    # ic(l[0])
-    # sched_add_cron(scheduler, l[0])
+
+    lst = await request.get_users_id_status()
+    for l in lst:
+        logger.debug(f"{l[0]}, {l[1]}")
+        if l[1]:
+            sched_add_cron(scheduler, l[0])
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

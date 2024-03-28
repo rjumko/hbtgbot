@@ -2,6 +2,7 @@ from datetime import datetime
 from icecream import ic
 import pandas as pd
 from tgbot.db.db import get_url_google, delete_all_by_userid, add_users
+from tgbot.db.dbconnect import Request
 
 
 def get_sheet_id(url: str) -> str:
@@ -21,7 +22,7 @@ def get_table_from_google(url: str, user_id: str) -> list[tuple]:
         for l in lst
     ]
 
-def get_table_from_google2(url: str, user_id: int) -> list[tuple]:
+async def get_table_from_google2(url: str, user_id: int) -> list[tuple]:
     sheet_id = get_sheet_id(url)
     df = pd.read_csv(
         f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv",
@@ -47,13 +48,13 @@ def prep_hb_text(lst: list):
     return "Нет день рождений"
 
 
-def copy_data_from_table(usr_id: str):
-    url = get_url_google(usr_id)
+async def copy_data_from_table(request: Request, usr_id: str):
+    url = await request.get_google_url(usr_id)
     if url:
         ic(usr_id, url)
-        delete_all_by_userid(usr_id)
-        add_users(
-            get_table_from_google(
+        await request.delete_all_by_userid(usr_id)
+        await request.add_clients(
+            await get_table_from_google2(
                 url,
                 usr_id,
             )

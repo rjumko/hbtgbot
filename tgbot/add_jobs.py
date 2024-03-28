@@ -10,6 +10,6 @@ def sched_add_cron(apscheduler, user_id):
         minute=0,
         # second=30,
         start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
-        id=user_id,
+        id=str(user_id),
         kwargs={"user_id": user_id},
     )
