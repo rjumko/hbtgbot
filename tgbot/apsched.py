@@ -2,7 +2,7 @@ from aiogram import Bot
 import logging
 from tgbot.utils import prep_hb_text
 from tgbot.db.dbconnect import Request
-from aiogram.exceptions import TelegramForbiddenError
+from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from apscheduler_di import ContextSchedulerDecorator
 
 
@@ -17,6 +17,6 @@ async def send_message_cron2(
     logger.info(lst)
     try:
         await bot.send_message(user_id, prep_hb_text(lst), parse_mode="HTML")
-    except TelegramForbiddenError:
+    except (TelegramForbiddenError, TelegramBadRequest):
         await request.set_start_status(user_id, False)
         apscheduler.pause_job(str(user_id))
