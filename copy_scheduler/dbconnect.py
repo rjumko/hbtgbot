@@ -34,7 +34,25 @@ class Request:
             )
             """
         )
-        self.logger.info(f"User add in BD")
+        self.logger.info(f"Table clients created")
+
+    async def create_clients_backup_table(self):
+        await self.connector.execute(
+            """
+            CREATE TABLE IF NOT EXISTS clients_backup (
+                client_id SERIAL PRIMARY KEY,
+                phone VARCHAR(50),
+                address VARCHAR(500),
+                birthday date,
+                client_name VARCHAR(500),
+                user_id BIGINT NOT NULL,
+                FOREIGN KEY (user_id)
+                    REFERENCES users (user_id)
+                    ON UPDATE CASCADE ON DELETE CASCADE
+            )
+            """
+        )
+        self.logger.info(f"Table clients_backup created")
 
     async def create_users_table(self):
         await self.connector.execute(

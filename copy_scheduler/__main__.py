@@ -5,18 +5,20 @@ import asyncio
 from environs import Env
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from copy_scheduler.dbconnect import Request
-from copy_scheduler.utils import copy_data_from_table
+from copy_scheduler.utils import copy_data_from_table, get_table_from_google
 
 
-async def copy_data_from_google_table(db: Request):
+async def copy_data_from_google_table(db: Request, backup: bool=False):
     lst = await db.get_users_urls()
-
     for l in lst:
         await copy_data_from_table(db, l[0])
 
 
 async def jobs(db: Request):
     await copy_data_from_google_table(db)
+
+async def job_copy_table_week(db: Request):
+    await copy_data_from_google_table(db, True)
 
 
 async def db_pool(env: Env):
@@ -44,6 +46,8 @@ async def main():
     logging.getLogger(__name__).setLevel(logging.DEBUG)
     scheduler = AsyncIOScheduler()
     scheduler.add_job(jobs, "interval", seconds=300, kwargs={"db": db})
+    db.create_clients_backup_table()
+    scheduler.add_job(job_copy_table_week, "cron", day_of_week=0, kwargs={"db": db})
     scheduler.start()
     logging.info(os.getcwd())
     while True:

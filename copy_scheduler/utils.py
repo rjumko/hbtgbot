@@ -2,7 +2,6 @@ from datetime import datetime
 import pandas as pd
 import logging
 from copy_scheduler.dbconnect import Request
-from copy_scheduler.db import get_url_google, delete_all_by_userid, add_users
 
 logging.basicConfig(
         level=logging.DEBUG,
@@ -30,12 +29,13 @@ async def get_table_from_google(url: str, user_id: int) -> list[tuple]:
     ]
 
 
-async def copy_data_from_table(db: Request, usr_id: int):
+async def copy_data_from_table(db: Request, usr_id: int, backup: bool=False):
     url = await db.get_url_google(usr_id)
     if url:
         logging.info(usr_id)
         logging.info(url)
-        await db.delete_all_by_userid(usr_id)
+        if not backup:
+            await db.delete_all_by_userid(usr_id)
         await db.add_clients(
             await get_table_from_google(
                 url,
