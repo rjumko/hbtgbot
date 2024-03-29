@@ -46,7 +46,7 @@ async def main():
     logging.getLogger(__name__).setLevel(logging.DEBUG)
     scheduler = AsyncIOScheduler()
     scheduler.add_job(jobs, "interval", seconds=300, kwargs={"db": db})
-    db.create_clients_backup_table()
+    await db.create_clients_backup_table()
     scheduler.add_job(job_copy_table_week, "cron", day_of_week=0, kwargs={"db": db})
     scheduler.start()
     logging.info(os.getcwd())
