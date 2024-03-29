@@ -31,9 +31,9 @@ async def command_start_process(
     if not await request.is_user_in_url_google(message.from_user.id):
         await request.add_user(message.from_user.id)
     if await request.get_google_url(message.from_user.id):
-        data = {"first_show": False}
+        data = {"first_show": False, "user_id": message.from_user.id}
     else:
-        data = {"first_show": True}
+        data = {"first_show": True, "user_id": message.from_user.id}
     await dialog_manager.start(
         state=tgbot.states.StartSG.start, mode=StartMode.RESET_STACK, data=data
     )
@@ -53,7 +53,7 @@ async def db_pool(env: Env):
 async def main():
     logging.basicConfig(
         level=logging.DEBUG,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+        format="%(asctime)s - %(levelname)s - %(lineno)d - %(name)s - %(message)s",
         datefmt="%d/%m/%Y %H:%M:%S %p %Z",
     )
     logger.debug("-----------------Starting bot-------------------------")
@@ -94,12 +94,16 @@ async def main():
 
     lst = await request.get_users_id_status()
     for l in lst:
+        if env.bool("DEV"):
+            await sched_add_interval(l[0], request, scheduler)
+            if not l[1]:
+                scheduler.get_job(str(l[0])).pause()
+        else:
+            await sched_add_cron(l[0], request, scheduler)
+            if not l[1]:
+                scheduler.get_job(str(l[0])).pause()
         logger.debug(f"{l[0]}, {l[1]}")
-        if l[1]:
-            if env.bool("DEV"):
-                sched_add_interval(scheduler, l[0], request)
-            else:
-                sched_add_cron(scheduler, l[0], request)
+        
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

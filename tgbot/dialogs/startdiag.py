@@ -1,25 +1,26 @@
-from datetime import datetime
+import logging
 from icecream import ic
 from aiogram.types import User, CallbackQuery
 from aiogram_dialog import Dialog, DialogManager, Window
 from aiogram_dialog.widgets.text import Const, Format
 from aiogram_dialog.widgets.kbd import Button, Checkbox, ManagedCheckbox, Back
 from environs import Env
-import asyncpg
 import tgbot.states
 import tgbot.apsched
 from tgbot.utils import prep_hb_text
 from tgbot.db.dbconnect import Request
+from tgbot.add_jobs import sched_add_cron, sched_add_interval
+
+
+logger = logging.getLogger(__name__)
 
 
 async def start_getter(
     dialog_manager: DialogManager, event_from_user: User, **kwargs
 ):  # -> dict[str, Any]:
+    print(dialog_manager)
     request: Request = dialog_manager.middleware_data["request"]
     user_id = event_from_user.id
-    start_status = await request.get_start_status(user_id)
-    ic(user_id, start_status)
-    await dialog_manager.find("checkbox").set_checked(checked=start_status)
     if await request.get_google_url(user_id):
         ic()
         first_show = False
@@ -40,6 +41,14 @@ async def start_getter(
         "not_scheduler_start": not scheduler_start,
         "not_user_empty": not user_empty,
     }
+
+
+async def on_start(data, dialog_manager: DialogManager):
+    user_id = data["user_id"]
+    request: Request = dialog_manager.middleware_data["request"]
+    start_status = await request.get_start_status(user_id)
+    logger.info(start_status)
+    await dialog_manager.find("checkbox").set_checked(checked=start_status)
 
 
 async def hb_today_getter(
@@ -63,50 +72,10 @@ async def hb_today(
 ):
     request: Request = dialog_manager.middleware_data["request"]
     user_id = callback.from_user.id
-    ic(user_id, "----------------hb_today")
     txt = prep_hb_text(await request.get_clients_birthday_today(user_id))
     dialog_manager.dialog_data.update(hb_today_text=txt)
     await dialog_manager.switch_to(state=tgbot.states.StartSG.hb_today)
 
-
-def sched_add_cron(apscheduler, user_id, request):
-    apscheduler.add_job(
-        tgbot.apsched.send_message_cron2,
-        trigger="cron",
-        hour=12,
-        minute=0,
-        # second=30,
-        start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
-        id=str(user_id),
-        kwargs={"user_id": user_id, "request": request},
-    )
-
-
-async def db_pool(env: Env):
-    return await asyncpg.create_pool(
-        user="hbtgbot",
-        password="V3brtGUP0gDejGdnXNMt",
-        database="hbtgbot",
-        host="172.16.0.154",
-        port="5432",
-        command_timeout=60,
-    )
-
-
-async def sched_add_interval(apscheduler, user_id: int, request: Request):
-    env = Request(await db_pool(666))
-    # env.read_env()
-    # pool_connect = await db_pool(env)
-    apscheduler.add_job(
-        tgbot.apsched.send_message_cron2,
-        trigger="interval",
-        # hour=12,
-        # minute=0,
-        seconds=10,
-        start_date=datetime.strptime("02.02.1978", "%d.%m.%Y"),
-        id=str(user_id),
-        kwargs={"user_id": user_id, "request": env},
-    )
 
 
 async def checkbox_scheduler(
@@ -116,32 +85,34 @@ async def checkbox_scheduler(
 ):
     env = Env()
     env.read_env()
+    logger.info(checkbox.is_checked())
     user_id = callback.from_user.id
     apscheduler = dialog_manager.middleware_data["apscheduler"]
     request: Request = dialog_manager.middleware_data["request"]
     job_id = str(user_id)
-    if apscheduler.get_job(job_id):
-        if checkbox.is_checked():
+    logger.info(job_id)
+    logger.info(apscheduler.get_job(job_id))
+    if checkbox.is_checked():
+        if apscheduler.get_job(job_id):
             apscheduler.resume_job(job_id)
-            ic(job_id)
-            ic(apscheduler.get_job(job_id).next_run_time)
+            logger.debug(f"Job resume: {apscheduler.get_job(job_id)}")
             await request.set_start_status(user_id, True)
         else:
-            apscheduler.pause_job(job_id)
-            ic(job_id)
-            ic(apscheduler.get_job(job_id).next_run_time)
-            await request.set_start_status(user_id, False)
+            # if env.bool("DEV"):
+            #     sched_add_interval(
+            #         user_id=user_id, request=request, apscheduler=apscheduler
+            #     )
+            # else:
+            #     sched_add_cron(
+            #         user_id=user_id, request=request, apscheduler=apscheduler
+            #     )
+            # logger.debug(f"Job add: {apscheduler.get_job(job_id)}")
+            await request.set_start_status(user_id, True)
     else:
-        if env.bool("DEV"):
-            ic("DEV - TRUE")
-            await sched_add_interval(apscheduler, user_id, request)
-        else:
-            ic("DEV - FALSE")
-            sched_add_cron(apscheduler, user_id)
-
-        ic("-------ADD------------\n", apscheduler.get_job(job_id).next_run_time)
-        ic(user_id)
-        await request.set_start_status(user_id, True)
+        if apscheduler.get_job(job_id):
+            apscheduler.pause_job(job_id)
+            logger.debug(f"Job pause: {apscheduler.get_job(job_id)}")
+            await request.set_start_status(user_id, False)
     dialog_manager.dialog_data.update(is_checked=checkbox.is_checked())
 
 
@@ -152,12 +123,8 @@ start_dialog = Dialog(
         #     text='<code>Это моноширинный текст</code>',
         # ),
         Format(
-            "Укажи ссылку на google таблицу в настройках, скопируй данные из таблицы, и жми 'Включить напоминание'.",
+            "Укажи ссылку на google таблицу в настройках, и жми 'Включить напоминание'.",
             when="first_show",
-        ),
-        Format(
-            "Скопируй данные из таблицы из google таблицы в настройках.",
-            when="user_empty",
         ),
         Format(
             "Запущено оповещение по расписанию:\n- каждый день в 12-00 НСК",
@@ -171,6 +138,7 @@ start_dialog = Dialog(
             checked_text=Const("[✔️] Включить напоминание"),
             unchecked_text=Const("[    ] Включить напоминание"),
             id="checkbox",
+            # default="start_status",
             on_state_changed=checkbox_scheduler,
             when="show_start_scheduler",
         ),
@@ -194,4 +162,5 @@ start_dialog = Dialog(
         getter=hb_today_getter,
         parse_mode="HTML",
     ),
+    on_start=on_start,
 )

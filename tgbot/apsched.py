@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 async def send_message_cron2(
     bot: Bot, user_id: int, request: Request, apscheduler: ContextSchedulerDecorator
 ):
-    logger.info(user_id)
+    logger.info(type(user_id))
     lst = await request.get_clients_birthday_today(user_id=user_id)
     logger.info(lst)
     try:

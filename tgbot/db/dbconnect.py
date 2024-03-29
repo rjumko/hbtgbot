@@ -87,7 +87,7 @@ class Request:
             google_url,
         )
 
-    async def get_start_status(self, user_id: int):
+    async def get_start_status(self, user_id: int) -> bool | None:
         row = await self.connector.fetchrow(
             """
             SELECT start_schedul FROM users
