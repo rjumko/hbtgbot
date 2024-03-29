@@ -14,6 +14,7 @@ async def go_start(
     await dialog_manager.start(
         state=tgbot.states.StartSG.start,
         mode=StartMode.RESET_STACK,
+        data={"user_id": callback.from_user.id},
     )
 
 
