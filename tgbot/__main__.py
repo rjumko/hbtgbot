@@ -84,7 +84,7 @@ async def main():
             if not l[1]:
                 scheduler.get_job(str(l[0])).pause()
         logger.debug(f"{l[0]}, {l[1]}")
-
+    logger.debug(scheduler.get_jobs())
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
