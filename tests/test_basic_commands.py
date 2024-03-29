@@ -1,33 +1,107 @@
-from datetime import datetime
+from unittest.mock import Mock
+
+from environs import Env
+import asyncpg
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler_di import ContextSchedulerDecorator
 
 import pytest
-from aiogram.dispatcher.event.bases import UNHANDLED
-from aiogram.enums import ChatType
-from aiogram.methods import SendMessage
-from aiogram.methods.base import TelegramType
-from aiogram.types import Update, Chat, User, Message
+from aiogram import Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram_dialog import setup_dialogs
+from aiogram_dialog.test_tools import BotClient, MockMessageManager
+from aiogram_dialog.test_tools.keyboard import InlineButtonTextLocator
+from tgbot.handlers import get_routers
+from tgbot.dialogs.startdiag import start_dialog
+from tgbot.dialogs.settingsdiag import settings_dialog
+from tgbot.middleware.dbmiddleware import DbSession
+from tgbot.middleware.scheduler import SchedulerMiddleware
+
+
+async def db_pool(env: Env):
+    return await asyncpg.create_pool(
+        user=env("DB__USER"),
+        password=env("DB__PASSWORD"),
+        database=env("DB__NAME"),
+        host=env("DB__HOST"),
+        port=env("DB__PORT"),
+        command_timeout=60,
+    )
+
 
 @pytest.mark.asyncio
-async def test_cmd_start(dp, bot):                           # [1]
-    bot.add_result_for(                                      # [2]
-        method=SendMessage,
-        ok=True,
-        # result сейчас можно пропустить
+async def test_click():
+    env = Env()
+    env.read_env()
+    pool_connect = await db_pool(env)
+    usecase = Mock()
+    start_getter = Mock(side_effect=["username"])
+    dp = Dispatcher(
+        usecase=usecase,
+        start_getter=start_getter,
+        storage=MemoryStorage(),
     )
-    chat = Chat(id=1234567, type=ChatType.PRIVATE)           # [3]
-    user = User(id=1234567, is_bot=False, first_name="User") # [3]
-    message = Message(                                       # [3]
-        message_id=1,
-        chat=chat, 
-        from_user=user, 
-        text="/start", 
-        date=datetime.now()
+    dp.include_router(*get_routers())
+    dp.include_router(start_dialog)
+    dp.include_router(settings_dialog)
+    scheduler = ContextSchedulerDecorator(AsyncIOScheduler(timezone="Asia/Novosibirsk"))
+    # scheduler.ctx.add_instance(bot, declared_class=Bot)
+    dp.update.middleware.register(SchedulerMiddleware(scheduler))
+    dp.update.middleware.register(DbSession(pool_connect))
+
+    client = BotClient(dp)
+    message_manager = MockMessageManager()
+    setup_dialogs(dp, message_manager=message_manager)
+
+    # start
+    await client.send("/start")
+    first_message = message_manager.one_message()
+    start_getter.assert_not_called()
+
+    assert (
+        first_message.text
+        == "Привет, None!\nУкажи ссылку на google таблицу"
+        " в настройках, и жми 'Включить напоминание'."
     )
-    result = await dp.feed_update(                      # [4]
-        bot, 
-        Update(message=message, update_id=1),
+    assert first_message.reply_markup
+    start_getter.assert_not_called()
+
+    # redraw
+    message_manager.reset_history()
+    await client.send("whatever")
+
+    first_message = message_manager.one_message()
+    assert (
+        first_message.text
+        == "Привет, None!\nУкажи ссылку на google таблицу"
+        " в настройках, и жми 'Включить напоминание'."
     )
-    assert result is not UNHANDLED                      # [5]
-    outgoing_message: TelegramType = bot.get_request()  # [6]
-    assert isinstance(outgoing_message, SendMessage)    # [7]
-    assert outgoing_message.text == "Привет!"           # [8]
+
+    # click next
+    message_manager.reset_history()
+    callback_id = await client.click(
+        first_message,
+        InlineButtonTextLocator("Настройки"),
+    )
+
+    message_manager.assert_answered(callback_id)
+    # usecase.assert_called()
+    second_message = message_manager.one_message()
+    print(second_message.text)
+    assert second_message.text == "Настройки."
+    assert second_message.reply_markup.inline_keyboard
+
+    callback_id = await client.click(
+        second_message,
+        InlineButtonTextLocator("Назад"),
+    )
+    message_manager.assert_answered(callback_id)
+    third_message = message_manager.last_message()
+    assert (
+        third_message.text
+        == "Привет, None!\nУкажи ссылку на google таблицу"
+        " в настройках, и жми 'Включить напоминание'."
+    )
+    assert third_message.reply_markup
+
+    # user_getter.assert_called_once()

@@ -3,8 +3,6 @@ import os
 import asyncpg
 import asyncio
 from environs import Env
-from time import sleep
-from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from copy_scheduler.dbconnect import Request
 from copy_scheduler.utils import copy_data_from_table

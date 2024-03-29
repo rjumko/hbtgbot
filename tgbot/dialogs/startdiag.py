@@ -18,15 +18,12 @@ logger = logging.getLogger(__name__)
 async def start_getter(
     dialog_manager: DialogManager, event_from_user: User, **kwargs
 ):  # -> dict[str, Any]:
-    print(dialog_manager)
     request: Request = dialog_manager.middleware_data["request"]
     user_id = event_from_user.id
     if await request.get_google_url(user_id):
-        ic()
         first_show = False
         show_start_scheduler = True
     else:
-        ic()
         first_show = True
         show_start_scheduler = False
     user_empty = await request.is_clients_empty(user_id)
@@ -38,7 +35,7 @@ async def start_getter(
         "show_start_scheduler": show_start_scheduler,
         "user_empty": user_empty,
         "scheduler_start": scheduler_start,
-        "not_scheduler_start": not scheduler_start,
+        "not_scheduler_start": not scheduler_start and not first_show,
         "not_user_empty": not user_empty,
     }
 
