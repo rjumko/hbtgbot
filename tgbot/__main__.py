@@ -1,12 +1,9 @@
 import asyncio
 import logging
-from icecream import ic
 from aiogram import Bot, Dispatcher
-from aiogram.filters import CommandStart
-from aiogram.types import Message
 from aiogram.fsm.storage.redis import RedisStorage, Redis, DefaultKeyBuilder
 from environs import Env
-from aiogram_dialog import DialogManager, StartMode, setup_dialogs
+from aiogram_dialog import setup_dialogs
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler_di import ContextSchedulerDecorator
@@ -17,26 +14,10 @@ from tgbot.middleware.dbmiddleware import DbSession
 from tgbot.db.dbconnect import Request
 from tgbot.add_jobs import sched_add_cron, sched_add_interval
 import asyncpg
-import tgbot.states
+from tgbot.handlers import get_routers
 
 
 logger = logging.getLogger(__name__)
-
-
-async def command_start_process(
-    message: Message, dialog_manager: DialogManager, request: Request
-):
-    ic("ADD NEW USER")
-    ic(message.from_user.id)
-    if not await request.is_user_in_url_google(message.from_user.id):
-        await request.add_user(message.from_user.id)
-    if await request.get_google_url(message.from_user.id):
-        data = {"first_show": False, "user_id": message.from_user.id}
-    else:
-        data = {"first_show": True, "user_id": message.from_user.id}
-    await dialog_manager.start(
-        state=tgbot.states.StartSG.start, mode=StartMode.RESET_STACK, data=data
-    )
 
 
 async def db_pool(env: Env):
@@ -86,9 +67,9 @@ async def main():
     scheduler.ctx.add_instance(bot, declared_class=Bot)
     dp.update.middleware.register(SchedulerMiddleware(scheduler))
     dp.update.middleware.register(DbSession(pool_connect))
+    dp.include_router(*get_routers())
     dp.include_router(start_dialog)
     dp.include_router(settings_dialog)
-    dp.message.register(command_start_process, CommandStart())
     setup_dialogs(dp)
     scheduler.start()
 
@@ -103,7 +84,6 @@ async def main():
             if not l[1]:
                 scheduler.get_job(str(l[0])).pause()
         logger.debug(f"{l[0]}, {l[1]}")
-        
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
