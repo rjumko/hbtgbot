@@ -21,7 +21,9 @@ from aiogram.fsm.storage.memory import MemoryStorage
 async def dp() -> Dispatcher:
     # apscheduler = Mock()
     # request = Mock()
+    scheduler = ContextSchedulerDecorator(AsyncIOScheduler(timezone="Asia/Novosibirsk"))
     dp = Dispatcher(
+        apscheduler=scheduler,
         # request=request,
         # usecase=usecase,
         # start_getter=start_getter,
@@ -31,9 +33,8 @@ async def dp() -> Dispatcher:
     dp.include_router(*get_routers())
     dp.include_router(start_dialog)
     dp.include_router(settings_dialog)
-    scheduler = ContextSchedulerDecorator(AsyncIOScheduler(timezone="Asia/Novosibirsk"))
     # scheduler.ctx.add_instance(bot, declared_class=Bot)
-    dp.update.middleware.register(scheduler)
+    # dp.update.middleware.register(scheduler)
     
     # dispatcher = Dispatcher(storage=MemoryStorage())
     # dispatcher.include_routers(*get_routers())

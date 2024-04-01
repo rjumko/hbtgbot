@@ -49,14 +49,15 @@ async def test_click(dp):
     )
     text_user_in_db = "Привет, None!\n" "Оповещение по расписанию отключено!"
    
-    
-    dp.update.middleware.register(DbSession(db_pool()))
+    pool = await db_pool()
+    dp.update.middleware.register(DbSession(pool))
 
     
     is_win = 483392289
     expected_message = text_user_in_db
     
     usecase = Mock()
+    print("ШОООО?")
     start_getter = Mock(side_effect=["username"])
     # dp = Dispatcher(
     #     usecase=usecase,
