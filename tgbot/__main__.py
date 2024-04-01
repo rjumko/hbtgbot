@@ -54,7 +54,13 @@ async def main():
     storage = RedisStorage(
         redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True)
     )
-    dp = Dispatcher(storage=storage)
+    scheduler = ContextSchedulerDecorator(AsyncIOScheduler(timezone="Asia/Novosibirsk"))
+    scheduler.ctx.add_instance(bot, declared_class=Bot)
+    dp = Dispatcher(
+        apscheduler=scheduler,
+        request=request,
+        storage=storage,
+    )
     jobstores = {
         "default": RedisJobStore(
             jobs_key="dispatched_trips_jobs",
@@ -63,10 +69,9 @@ async def main():
             db=2,
         )
     }
-    scheduler = ContextSchedulerDecorator(AsyncIOScheduler(timezone="Asia/Novosibirsk"))
-    scheduler.ctx.add_instance(bot, declared_class=Bot)
-    dp.update.middleware.register(SchedulerMiddleware(scheduler))
-    dp.update.middleware.register(DbSession(pool_connect))
+
+    # dp.update.middleware.register(SchedulerMiddleware(scheduler))
+    # dp.update.middleware.register(DbSession(pool_connect))
     dp.include_router(*get_routers())
     dp.include_router(start_dialog)
     dp.include_router(settings_dialog)
