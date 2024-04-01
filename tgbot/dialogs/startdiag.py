@@ -95,15 +95,15 @@ async def checkbox_scheduler(
             logger.debug(f"Job resume: {apscheduler.get_job(job_id)}")
             await request.set_start_status(user_id, True)
         else:
-            # if env.bool("DEV"):
-            #     sched_add_interval(
-            #         user_id=user_id, request=request, apscheduler=apscheduler
-            #     )
-            # else:
-            #     sched_add_cron(
-            #         user_id=user_id, request=request, apscheduler=apscheduler
-            #     )
-            # logger.debug(f"Job add: {apscheduler.get_job(job_id)}")
+            if env.bool("DEV"):
+                await sched_add_interval(
+                    user_id=user_id, request=request, apscheduler=apscheduler
+                )
+            else:
+                await sched_add_cron(
+                    user_id=user_id, request=request, apscheduler=apscheduler
+                )
+            logger.debug(f"Job add: {apscheduler.get_job(job_id)}")
             await request.set_start_status(user_id, True)
     else:
         if apscheduler.get_job(job_id):

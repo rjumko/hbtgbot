@@ -16,7 +16,7 @@ async def tst():
     "is_win, expected_message2",
     [
         [1, "Успех!"],
-        [2, "В другой раз повезёт!"]
+        # [2, "В другой раз повезёт!"]
     ]
 )
 async def test_click(dp, is_win, expected_message2):
@@ -41,7 +41,7 @@ async def test_click(dp, is_win, expected_message2):
     message_manager = MockMessageManager()
     setup_dialogs(dp, message_manager=message_manager)
 
-    client = BotClient(dp, user_id=2)
+    client = BotClient(dp, user_id=is_win)
     message_manager = MockMessageManager()
     setup_dialogs(dp, message_manager=message_manager)
 

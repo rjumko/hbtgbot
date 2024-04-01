@@ -30,6 +30,19 @@ async def db_pool(env: Env):
         command_timeout=60,
     )
 
+async def start_sheduls(request, scheduler, env):
+    lst = await request.get_users_id_status()
+    for l in lst:
+        if env.bool("DEV"):
+            await sched_add_interval(l[0], request, scheduler)
+            if not l[1]:
+                scheduler.get_job(str(l[0])).pause()
+        else:
+            await sched_add_cron(l[0], request, scheduler)
+            if not l[1]:
+                scheduler.get_job(str(l[0])).pause()
+        logger.debug(f"{l[0]}, {l[1]}")
+    logger.debug(scheduler.get_jobs())
 
 async def main():
     logging.basicConfig(
@@ -70,26 +83,14 @@ async def main():
         )
     }
 
-    # dp.update.middleware.register(SchedulerMiddleware(scheduler))
-    # dp.update.middleware.register(DbSession(pool_connect))
     dp.include_router(*get_routers())
     dp.include_router(start_dialog)
     dp.include_router(settings_dialog)
     setup_dialogs(dp)
-    scheduler.start()
 
-    lst = await request.get_users_id_status()
-    for l in lst:
-        if env.bool("DEV"):
-            await sched_add_interval(l[0], request, scheduler)
-            if not l[1]:
-                scheduler.get_job(str(l[0])).pause()
-        else:
-            await sched_add_cron(l[0], request, scheduler)
-            if not l[1]:
-                scheduler.get_job(str(l[0])).pause()
-        logger.debug(f"{l[0]}, {l[1]}")
-    logger.debug(scheduler.get_jobs())
+    scheduler.start()
+    await start_sheduls(request, scheduler, env)
+    
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
