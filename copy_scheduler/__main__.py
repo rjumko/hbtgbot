@@ -11,7 +11,7 @@ from copy_scheduler.utils import copy_data_from_table, get_table_from_google
 async def copy_data_from_google_table(db: Request, backup: bool=False):
     lst = await db.get_users_urls()
     for l in lst:
-        await copy_data_from_table(db, l[0])
+        await copy_data_from_table(db, l[0], backup)
 
 
 async def jobs(db: Request):
