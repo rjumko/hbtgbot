@@ -1,5 +1,4 @@
 import logging
-from icecream import ic
 from aiogram.types import User, CallbackQuery
 from aiogram_dialog import Dialog, DialogManager, Window
 from aiogram_dialog.widgets.text import Const, Format
@@ -132,7 +131,7 @@ start_dialog = Dialog(
             when="not_scheduler_start",
         ),
         Checkbox(
-            checked_text=Const("[✔️] Включить напоминание"),
+            checked_text=Const("[✔️] Выключить напоминание"),
             unchecked_text=Const("[    ] Включить напоминание"),
             id="checkbox",
             # default="start_status",

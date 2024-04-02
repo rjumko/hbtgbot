@@ -17,7 +17,8 @@ from tgbot.dialogs.settingsdiag import settings_dialog
 from tgbot.db.dbconnect import Request
 from tgbot.handlers import get_routers
 
-@pytest_asyncio.fixture(autouse = True, scope="function")
+
+@pytest_asyncio.fixture(autouse=True, scope="function")
 async def db_pool():
     env = Env()
     env.read_env()
@@ -31,18 +32,19 @@ async def db_pool():
     )
     return Request(ret)
 
-@pytest_asyncio.fixture(scope="function")
-async def dp(db_pool) -> Dispatcher:
+
+@pytest_asyncio.fixture(scope="session")
+async def dp() -> Dispatcher:
     scheduler = ContextSchedulerDecorator(AsyncIOScheduler(timezone="Asia/Novosibirsk"))
     dp = Dispatcher(
         apscheduler=scheduler,
-        request=db_pool,
         storage=MemoryStorage(),
     )
     dp.include_router(*get_routers())
     dp.include_router(start_dialog)
     dp.include_router(settings_dialog)
     return dp
+
 
 @pytest.fixture(scope="session")
 def bot() -> MockedBot:
