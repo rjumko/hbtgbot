@@ -1,10 +1,12 @@
 import pytest
 from unittest.mock import Mock
 
-
+from aiogram import Dispatcher
 from aiogram_dialog import setup_dialogs
 from aiogram_dialog.test_tools import MockMessageManager, BotClient
 from aiogram_dialog.test_tools.keyboard import InlineButtonTextLocator
+
+from tgbot.db.dbconnect import Request
 
 
 q = (
@@ -19,10 +21,10 @@ q3 = "Привет, None!\n" "Запущено оповещение по рас�
 @pytest.mark.parametrize(
     "is_win, expected_message", [[483392289, q3]]
 )  #  [[1, q], [2, q],
-async def test_click(dp, db_pool, is_win, expected_message):
+async def test_click(dp: Dispatcher, db_pool: Request, is_win: int, expected_message: str):
 
-    che = "[✔️] Выключить напоминание"
-    uche = "[    ] Включить напоминание"
+    che = "\[✔️\] Выключить напоминание"
+    uche = "\[    \] Включить напоминание"
     dp["request"] = db_pool
 
     start_getter = Mock(side_effect=["username"])
@@ -34,11 +36,13 @@ async def test_click(dp, db_pool, is_win, expected_message):
     first_message = message_manager.last_message()
     start_getter.assert_not_called()
 
+    # db_pool.get_google_url()
+    # db_pool.get_start_status()
     assert first_message.text == expected_message
     assert first_message.reply_markup
     callback_id = await client.click(
         first_message,
-        InlineButtonTextLocator(".*Выключить напоминание"),
+        InlineButtonTextLocator(che),
     )
     message_manager.assert_answered(callback_id)
     # start_getter.assert_not_called()

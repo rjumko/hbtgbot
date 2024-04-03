@@ -67,7 +67,7 @@ class Request:
             user_id,
         )
 
-    async def get_google_url(self, user_id: int):
+    async def get_google_url(self, user_id: int) -> str | None:
         row = await self.connector.fetchrow(
             """
             SELECT google_url FROM users
