@@ -9,8 +9,6 @@ from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler_di import ContextSchedulerDecorator
 from tgbot.dialogs.settingsdiag import settings_dialog
 from tgbot.dialogs.startdiag import start_dialog
-from tgbot.middleware.scheduler import SchedulerMiddleware
-from tgbot.middleware.dbmiddleware import DbSession
 from tgbot.db.dbconnect import Request
 from tgbot.add_jobs import sched_add_cron, sched_add_interval
 import asyncpg

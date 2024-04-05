@@ -44,7 +44,7 @@ def prep_hb_text(lst: list):
         for l in lst:
             text += f"<b><code>{l[0]}</code></b>, {l[1]}, {l[2]}\n"
         return text  # "День рождения у:\n" + "\n".join(", ".join(l) for l in lst)
-    return "Нет день рождений"
+    return "Нет дней рождения"
 
 
 async def copy_data_from_table(request: Request, usr_id: str):

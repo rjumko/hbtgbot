@@ -9,7 +9,7 @@ from aiogram_dialog.test_tools.keyboard import InlineButtonTextLocator
 from tgbot.db.dbconnect import Request
 
 
-q = (
+q1 = (
     "Привет, None!\nУкажи ссылку на google таблицу"
     " в настройках, и жми 'Включить напоминание'."
 )
@@ -18,10 +18,13 @@ q3 = "Привет, None!\n" "Запущено оповещение по рас�
 
 
 @pytest.mark.asyncio
+# @pytest.mark.parametrize(
+#     "user_id, expected_message", [[483392289, q3]]
+# )  #  [[1, q], [2, q],
 @pytest.mark.parametrize(
-    "is_win, expected_message", [[483392289, q3]]
-)  #  [[1, q], [2, q],
-async def test_click(dp: Dispatcher, db_pool: Request, is_win: int, expected_message: str):
+        "user_id", [1, 2, 483392289]
+)
+async def test_click(dp: Dispatcher, db_pool: Request, user_id: int):
 
     che = "\[✔️\] Выключить напоминание"
     uche = "\[    \] Включить напоминание"
@@ -31,14 +34,14 @@ async def test_click(dp: Dispatcher, db_pool: Request, is_win: int, expected_mes
 
     message_manager = MockMessageManager()
     setup_dialogs(dp, message_manager=message_manager)
-    client = BotClient(dp, user_id=is_win)
+    client = BotClient(dp, user_id=user_id)
     await client.send("/start")
     first_message = message_manager.last_message()
     start_getter.assert_not_called()
 
-    # db_pool.get_google_url()
+    # if db_pool.get_google_url()
     # db_pool.get_start_status()
-    assert first_message.text == expected_message
+    assert first_message.text == q1
     assert first_message.reply_markup
     callback_id = await client.click(
         first_message,
