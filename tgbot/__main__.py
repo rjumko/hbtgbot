@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 async def db_pool(env: Env):
+    logger.debug(env("DB__HOST"))
     return await asyncpg.create_pool(
         user=env("DB__USER"),
         password=env("DB__PASSWORD"),
