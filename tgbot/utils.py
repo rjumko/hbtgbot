@@ -47,7 +47,7 @@ def prep_hb_text(lst: list):
     return "Нет дней рождения"
 
 
-async def copy_data_from_table(request: Request, usr_id: str):
+async def copy_data_from_table(request: Request, usr_id: int):
     url = await request.get_google_url(usr_id)
     if url:
         ic(usr_id, url)
