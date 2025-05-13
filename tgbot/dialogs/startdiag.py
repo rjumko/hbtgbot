@@ -144,7 +144,7 @@ start_dialog = Dialog(
             on_click=hb_today,
             when="not_user_empty",
         ),
-        Button(text=Const("Настройки"), id="settings", on_click=button_settings),
+        # Button(text=Const("Настройки"), id="settings", on_click=button_settings),
         getter=start_getter,
         state=tgbot.states.StartSG.start,
         parse_mode="HTML",
