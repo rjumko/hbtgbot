@@ -1,3 +1,4 @@
+import asyncio
 from aiogram import Bot
 import logging
 from tgbot.utils import prep_hb_text, copy_data_from_table
@@ -14,6 +15,7 @@ async def send_message_cron2(
 ):
     logger.info(type(user_id))
     await copy_data_from_table(request, user_id)
+    await asyncio.sleep(10)
     lst = await request.get_clients_birthday_today(user_id=user_id)
     logger.info(lst)
     try:
