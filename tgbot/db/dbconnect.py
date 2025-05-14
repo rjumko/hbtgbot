@@ -128,7 +128,7 @@ class Request:
     async def get_clients_birthday_today(self, user_id: int):
         rows = await self.connector.fetch(
             """
-            SELECT phone, client_name, birthday FROM clients
+            SELECT phone, client_name, birthday, address FROM clients
             WHERE date_part('month', birthday) = date_part('month', CURRENT_DATE)
             AND date_part('day', birthday) = date_part('day', CURRENT_DATE)
             AND user_id = $1
