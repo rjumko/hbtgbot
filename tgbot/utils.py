@@ -42,7 +42,7 @@ def prep_hb_text(lst: list):
         ic("День рождения у")
         text = "День рождения у:\n"
         for l in lst:
-            text += f"<b><code>{l[0]}</code></b>, {l[1]}, {l[2]}\n{l[3]}"
+            text += f"<b><code>{l[0]}</code></b>, {l[1]}, {l[2]}\n{l[3]}\n\n"
         return text  # "День рождения у:\n" + "\n".join(", ".join(l) for l in lst)
     return "Нет дней рождения"
 
